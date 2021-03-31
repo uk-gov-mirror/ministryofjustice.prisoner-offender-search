@@ -5,6 +5,7 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.context.ApplicationContext
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.stereotype.Service
 import uk.gov.justice.digital.hmpps.prisonersearch.services.IndexRequestType.OFFENDER
@@ -15,7 +16,8 @@ import uk.gov.justice.digital.hmpps.prisonersearch.services.IndexRequestType.REB
 class PrisonerIndexListener(
   private val prisonerIndexService: PrisonerIndexService,
   @Qualifier("gson") private val gson: Gson,
-  private val telemetryClient: TelemetryClient
+  private val telemetryClient: TelemetryClient,
+  private val applicationContext: ApplicationContext
 ) {
   companion object {
     val log: Logger = LoggerFactory.getLogger(this::class.java)
@@ -23,6 +25,9 @@ class PrisonerIndexListener(
 
   @JmsListener(destination = "\${sqs.index.queue.name}", containerFactory = "jmsIndexListenerContainerFactory")
   fun processIndexRequest(requestJson: String?, msg: javax.jms.Message) {
+    log.info("applicationContext {}", applicationContext)
+    log.info("PrisonerIndexListener {}", this)
+
     log.debug(requestJson)
     try {
       val indexRequest = gson.fromJson(requestJson, PrisonerIndexRequest::class.java)
