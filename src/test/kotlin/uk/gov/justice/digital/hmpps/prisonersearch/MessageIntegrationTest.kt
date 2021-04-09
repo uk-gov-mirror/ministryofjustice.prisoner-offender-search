@@ -134,7 +134,7 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     awsSqsClient.sendMessage(queueUrl, message)
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-    Thread.sleep(500);
+    Thread.sleep(500)
     webTestClient.get()
       .uri("/info")
       .exchange()

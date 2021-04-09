@@ -8,7 +8,6 @@ import com.microsoft.applicationinsights.TelemetryClient
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
-import org.elasticsearch.action.admin.indices.refresh.RefreshRequest
 import org.elasticsearch.client.Request
 import org.elasticsearch.client.RestHighLevelClient
 import org.springframework.beans.factory.annotation.Autowired
