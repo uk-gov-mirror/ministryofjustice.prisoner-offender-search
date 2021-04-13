@@ -78,7 +78,7 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     awsSqsClient.sendMessage(queueUrl, message)
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-    refreshESIndices()
+    Thread.sleep(500)
     search(SearchCriteria("A7089FC", null, null), "/results/empty.json")
   }
 
@@ -94,7 +94,7 @@ class MessageIntegrationTest : QueueIntegrationTest() {
     awsSqsClient.sendMessage(queueUrl, message)
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
-    refreshESIndices()
+    Thread.sleep(500)
     search(SearchCriteria("A7089FB", null, null), "/results/search_results_A7089FB.json")
     search(SearchCriteria("A7089FA", null, null), "/results/empty.json")
   }
@@ -135,7 +135,8 @@ class MessageIntegrationTest : QueueIntegrationTest() {
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnQueue() } matches { it == 0 }
     await untilCallTo { getNumberOfMessagesCurrentlyOnIndexQueue() } matches { it == 0 }
-    refreshESIndices()
+    Thread.sleep(500)
+
     webTestClient.get()
       .uri("/info")
       .exchange()

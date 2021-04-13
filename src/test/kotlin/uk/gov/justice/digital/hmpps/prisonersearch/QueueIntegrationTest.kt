@@ -107,12 +107,7 @@ abstract class QueueIntegrationTest : IntegrationTest() {
     await untilCallTo { prisonRequestCountFor("/api/offenders/A9999AB") } matches { it == 1 }
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnIndexQueue() } matches { it == 0 }
-    refreshESIndices()
-  }
-
-  fun refreshESIndices() {
-    elasticSearchClient.lowLevelClient.performRequest(Request("POST", "/${SyncIndex.INDEX_A.indexName}/_refresh"))
-    elasticSearchClient.lowLevelClient.performRequest(Request("POST", "/${SyncIndex.INDEX_B.indexName}/_refresh"))
+    Thread.sleep(500)
   }
 
   fun setupIndexes() {
