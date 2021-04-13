@@ -1,13 +1,17 @@
 package uk.gov.justice.digital.hmpps.prisonersearch
 
 import com.amazonaws.services.sqs.AmazonSQS
+import com.amazonaws.util.IOUtils
 import com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor
 import com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import com.microsoft.applicationinsights.TelemetryClient
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
+import org.elasticsearch.action.index.IndexRequest
+import org.elasticsearch.action.support.WriteRequest
 import org.elasticsearch.client.Request
 import org.elasticsearch.client.RestHighLevelClient
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,10 +26,7 @@ import uk.gov.justice.digital.hmpps.prisonersearch.model.IndexStatus
 import uk.gov.justice.digital.hmpps.prisonersearch.model.PrisonerA
 import uk.gov.justice.digital.hmpps.prisonersearch.model.PrisonerB
 import uk.gov.justice.digital.hmpps.prisonersearch.model.SyncIndex
-import uk.gov.justice.digital.hmpps.prisonersearch.services.GlobalSearchCriteria
-import uk.gov.justice.digital.hmpps.prisonersearch.services.IndexQueueService
-import uk.gov.justice.digital.hmpps.prisonersearch.services.PrisonSearch
-import uk.gov.justice.digital.hmpps.prisonersearch.services.SearchCriteria
+import uk.gov.justice.digital.hmpps.prisonersearch.services.*
 import uk.gov.justice.digital.hmpps.prisonersearch.services.dto.MatchRequest
 
 @ActiveProfiles(profiles = ["test", "test-queue"])
@@ -107,7 +108,12 @@ abstract class QueueIntegrationTest : IntegrationTest() {
     await untilCallTo { prisonRequestCountFor("/api/offenders/A9999AB") } matches { it == 1 }
 
     await untilCallTo { getNumberOfMessagesCurrentlyOnIndexQueue() } matches { it == 0 }
-    Thread.sleep(500)
+    refreshESIndices()
+  }
+
+  fun refreshESIndices() {
+    elasticSearchClient.lowLevelClient.performRequest(Request("POST", "/${SyncIndex.INDEX_A.indexName}/_refresh"))
+    elasticSearchClient.lowLevelClient.performRequest(Request("POST", "/${SyncIndex.INDEX_B.indexName}/_refresh"))
   }
 
   fun setupIndexes() {
